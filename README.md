@@ -27,3 +27,10 @@ Guide on AWS CloudFormation
 ### AWS Developer Tools
 
 ![aws-developer-tools](images/aws-developer-tools.png)
+
+## Stack Features
+
+- Create Stack
+- Update Stack
+- Create Change Sets
+- Rollback
