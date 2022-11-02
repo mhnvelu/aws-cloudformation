@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Add new SG to allow SSH
+
+Resources:
+  DevEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0ee415e1b8b71305f
+      InstanceType: t2.micro
+      KeyName: cfn-key-1
+      SecurityGroups:
+        - default
+        - !Ref SSHSecurityGroup
+
+  SSHSecurityGroup:
+  #If GroupName attribute is absent, then the SG Physical id (SG name) will be <Stack name>-<Logical Id>-<Random alphanumeric>
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: New SG for SSH
+      GroupName: SSH-SG
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          CidrIp: 0.0.0.0/0
+          Description: SSH SG
+          FromPort: 22
+          ToPort: 22
