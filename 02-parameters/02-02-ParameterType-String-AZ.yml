@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: String Parameter AZ Demo
+#Info: The changeset created will have EC2 instance Replacement = true
+Parameters:
+  MyKeyName:
+    Description: Select the Key Name
+    Type: AWS::EC2::KeyPair::KeyName
+  MyAvailabilityZone:
+    Description: Select the AZ
+    Type: String
+    Default: eu-west-1c
+    AllowedValues:
+      - eu-west-1a
+      - eu-west-1b
+      - eu-west-1c
+
+Resources:
+  DevEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0ee415e1b8b71305f
+      InstanceType: t2.micro
+      KeyName: !Ref MyKeyName
+      SecurityGroups:
+        - default
+        - !Ref SSHSecurityGroup
+      AvailabilityZone: !Ref MyAvailabilityZone
+
+  SSHSecurityGroup:
+  #If GroupName attribute is absent, then the SG Physical id (SG name) will be <Stack name>-<Logical Id>-<Random alphanumeric>
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: New SG for SSH
+      GroupName: SSH-SG
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          CidrIp: 0.0.0.0/0
+          Description: SSH SG
+          FromPort: 22
+          ToPort: 22
+          # Adding new rule will not perform Replacement of SG. Instead it will just update it
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
