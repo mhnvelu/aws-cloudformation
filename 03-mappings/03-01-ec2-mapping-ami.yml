@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Mappings Example Demo
+
+Parameters:
+  MyKeyName:
+    Description: Select the Key Name
+    Type: AWS::EC2::KeyPair::KeyName
+
+Mappings: 
+  MyRegionMap:
+    eu-west-1:
+      AMIID: ami-0ee415e1b8b71305f
+    eu-west-2:
+      AMIID: ami-04706e771f950937f
+      
+Resources: 
+  myEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: !Ref MyKeyName
+      ImageId: !FindInMap 
+        - MyRegionMap
+        - !Ref 'AWS::Region'
+        - AMIID
+      InstanceType: t2.micro
+   
