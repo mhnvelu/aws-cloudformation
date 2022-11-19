@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Mappings Example Demo
+
+Parameters:
+  MyKeyName:
+    Description: Select the Key Name
+    Type: AWS::EC2::KeyPair::KeyName
+  MyEnvironment:
+    Description: Select the Environment
+    ConstraintDescription: Environment should be either dev or prod
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+
+Mappings: 
+  MyRegionMap:
+    eu-west-1:
+      AMIID: ami-0ee415e1b8b71305f
+    eu-west-2:
+      AMIID: ami-04706e771f950937f
+  MyEnvironmentMap:
+    dev:
+      instanceType: t1.micro
+    prod:
+      instanceType: t2.micro
+
+Conditions:
+  ProdOnlyEIP:
+    Fn::Equals:
+      - !Ref MyEnvironment
+      - prod
+  CreateDevSG: !Equals [!Ref MyEnvironment, dev]
+      
+Resources: 
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: !Ref MyKeyName
+      ImageId: !FindInMap 
+        - MyRegionMap
+        - !Ref 'AWS::Region'
+        - AMIID
+      InstanceType: !FindInMap
+        - MyEnvironmentMap
+        - !Ref MyEnvironment
+        - instanceType
+        # If Dev, then only SG will be created and attached. Else NoValue
+        # NoValue means SG property here will be ignored when instance is created
+      SecurityGroups: !If [CreateDevSG, [!Ref MyDevSG], 'AWS::NoValue']
+
+# If Dev, then only SG will be created
+  MyDevSG:
+    Type: AWS::EC2::SecurityGroup 
+    Condition: CreateDevSG
+    Properties:
+      GroupDescription: DevSG
+      GroupName: Dev-SG
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          CidrIp: 0.0.0.0/0
+          Description: SSH SG
+          FromPort: 22
+          ToPort: 22
+
+  
+
+   
