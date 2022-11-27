@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Outputs Base Template
+
+
+Parameters:
+  MyKeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Select the Key Name
+  MyEnvironmentName:
+    Type: String
+    Description: Select an Environment
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    ConstraintDescription: Must be dev or prod
+Mappings:
+  MyRegionMap:
+    eu-west-1:
+      AMIID: ami-0ee415e1b8b71305f
+    eu-west-2:
+      AMIID: ami-04706e771f950937f
+  MyEnvironmentMap:
+    dev:
+      instanceType: t1.micro
+    prod:
+      instanceType: t2.micro 
+
+Resources:
+  MyVMInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !FindInMap [MyRegionMap, !Ref 'AWS::Region', AMIID]
+      InstanceType: !FindInMap [MyEnvironmentMap, !Ref MyEnvironmentName, instanceType]
+      KeyName: !Ref MyKeyName
+      SecurityGroups:
+        - !Ref MyDevGlobalSG
+  
+  MyDevGlobalSG:
+  #If GroupName attribute is absent, then the SG Physical id (SG name) will be <Stack name>-<Logical Id>-<Random alphanumeric>
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: New SG for SSH
+      GroupName: SSH-SG
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          CidrIp: 0.0.0.0/0
+          Description: SSH SG
+          FromPort: 22
+          ToPort: 22
+
